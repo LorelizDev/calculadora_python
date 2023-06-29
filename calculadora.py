@@ -17,49 +17,83 @@ def btn_click(num):
     global operation
     
     try:
-        operators = ["+", "-", "*", "/", "**", "%"]
-        if num in operators:
+        operators = ["+", "-", "*", "/", "**", "%", "pi"]
+        # Prevención de escritura doble de signos
+        if num in operators[:6]:
             if operation[-2:] == "**":
                 operation = operation[:-2] + str(num)
                 screen_text.set(operation)
-            elif operation [-1] in operators:
+            elif operation[-1] in operators[:5]:
                 operation = operation[:-1] + str(num)
                 screen_text.set(operation)
+            elif num == "%" and operation[-1] == "%":
+                pass
             else:
                 screen_text.set(screen_text.get() + num)
-                operation = screen_text.get()       
+                operation = screen_text.get()
+        # Prevención de escritura doble de puntos     
         elif num == ".":
-            operators = ["+", "-", "*", "/", "%", "pi"]
             last_operator_index = max(operation.rfind(op) for op in operators)
             last_fragment = operation[last_operator_index + 1:]
-            if "." not in last_fragment:
+            if operation [-2:] == "pi":
+                pass
+            elif "." not in last_fragment:
                 screen_text.set(screen_text.get() + num)
                 operation = screen_text.get()
+        # Prevención de escritura de 'pi' dobles y después de puntos
+        elif num == "pi":
+            if operation[-1] == "." or operation[-2:] == "pi":
+                pass
+            else:
+                operation = operation + str(num)
+                screen_text.set(operation)
         else:    
             operation = operation + str(num)
             screen_text.set(operation)
     except:
-        screen_text.set(screen_text.get() + num)
-        operation = screen_text.get()
+        if num == "pi":
+            operation = num
+            screen_text.set(operation)
+        else:
+            screen_text.set(screen_text.get() + num)
+            operation = screen_text.get()
 
 # CÁLCULO Y MUESTRA DE RESULTADOS
 def calculation():
     global operation
 
     try:
-        if operation[-1] == "%":
-            operation = str(eval(operation[:-1])/100)
-            screen_text.set(operation)
-        else:
-            try:
-                operation=str(eval(screen_text.get()))
-                screen_text.set(operation)
-            except:
-                screen_text.set("ERROR")
+        operation=eval(screen_text.get())
+        screen_text.set(operation)
     except:
-        operation = screen_text.get()
+        screen_text.set("ERROR")
     operation = ""
     
+# CÁLCULO DE PORCENTAJE
+def porcentage():
+    global operation
+    
+    try:
+        operators = ["+", "-", "*", "/"]
+        operator_index = max(operation.rfind(op) for op in operators)
+        num_1 = operation[:operator_index]
+        num_2 = operation[operator_index + 1:]
+        percent = float(num_2)/100
+        if operation[operator_index] in operators[:2]:
+            operation = eval(num_1 + operation[operator_index] + (num_1 + "*" + str(percent)))
+            screen_text.set(operation)
+        elif operation[operator_index] in operators[2:]:
+            operation = eval(num_1 + operation[operator_index] + str(percent))
+            screen_text.set(operation)
+        else:
+            operation = eval(screen_text.get() + "/100")
+            screen_text.set(operation)
+    except:
+        operation = eval(screen_text.get() + "/100")
+        screen_text.set(operation)
+    operation = ""
+
+
 # LIMPIEZA DE PANTALLA
 def clear():
     global operation
@@ -102,7 +136,7 @@ button_erase = Button(root, text="⌫", bg="#FE6D6D", font=button_font, width=bu
 # Fila 2
 button_pi = Button(root, text="π", bg=button_color, font=button_font, width=button_width, height=button_height, command=lambda:btn_click("pi")).grid(row=3, column=1, padx=button_padx_left, pady=button_pady)
 button_sqrt = Button(root, text="√x", bg=button_color, font=button_font, width=button_width, height=button_height, command=lambda:btn_click("sqrt(")).grid(row=3, column=2, pady=button_pady)
-button_percent = Button(root, text="%", bg=button_color, font=button_font, width=button_width, height=button_height, command=lambda:btn_click("%")).grid(row=3, column=3, pady=button_pady)
+button_percent = Button(root, text="%", bg=button_color, font=button_font, width=button_width, height=button_height, command=porcentage).grid(row=3, column=3, pady=button_pady)
 button_div = Button(root, text="÷", bg=button_color, font=(button_font), width=button_width, height=button_height, command=lambda:btn_click("/")).grid(row=3, column=4,padx=button_padx_right, pady=button_pady)
 
 # Fila 3
